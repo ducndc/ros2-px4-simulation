@@ -143,6 +143,9 @@ void OffboardControl::arm() const
 	RCLCPP_INFO(this->get_logger(), "Arm command send");
 }
 
+
+
+
 /**
  * @brief Send a command to Disarm the vehicle
  */
@@ -194,14 +197,7 @@ void OffboardControl::publish_trajectory_setpoint(int x, int y, int z) const
  */
 void OffboardControl::land() const 
 {
-	TrajectorySetpoint msg{};
-	msg.timestamp = timestamp_.load();
-	msg.x = 0.0;
-	msg.y = 0.0;
-	msg.z = 5.0;
-	msg.yaw = -3.14;
-
-	trajectory_setpoint_publisher_->publish(msg);
+	publish_vehicle_command(VehicleCommand::VEHICLE_CMD_NAV_LAND);
 }
 
 
