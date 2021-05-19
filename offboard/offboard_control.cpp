@@ -53,6 +53,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <cmath>
 
 using namespace std::chrono;
 using namespace std::chrono_literals;
@@ -97,16 +98,70 @@ public:
 
 				// Arm the vehicle
 				this->arm();
+
 			}
+
             		// offboard_control_mode needs to be paired with trajectory_setpoint
 			publish_offboard_control_mode();
-			publish_trajectory_setpoint(0, 0, -15);
-			//land();
+			publish_trajectory_setpoint(0, 0, -5);
+
+			if (offboard_setpoint_counter_ >= 10 && offboard_setpoint_counter_ <= 50)
+			{
+				publish_trajectory_setpoint(0, 0, -10);
+			}
+
+			if (offboard_setpoint_counter_ >= 51 && offboard_setpoint_counter_ <= 100)
+			{
+				publish_trajectory_setpoint(5, -2, -10);
+			}
+
+			if (offboard_setpoint_counter_ >= 101 && offboard_setpoint_counter_ <= 150)
+			{
+				publish_trajectory_setpoint(10, 0, -10);
+			}
+
+			if (offboard_setpoint_counter_ >= 151 && offboard_setpoint_counter_ <= 200)
+			{
+				publish_trajectory_setpoint(12, 5, -10);
+			}
+
+			if (offboard_setpoint_counter_ >= 201 && offboard_setpoint_counter_ <= 250)
+			{
+				publish_trajectory_setpoint(10, 10, -10);
+			}
+
+			if (offboard_setpoint_counter_ >= 251 && offboard_setpoint_counter_ <= 300)
+			{
+				publish_trajectory_setpoint(5, 12, -10);
+			}
+
+			if (offboard_setpoint_counter_ >= 301 && offboard_setpoint_counter_ <= 350)
+			{
+				publish_trajectory_setpoint(0, 10, -10);
+			}
+
+			if (offboard_setpoint_counter_ >= 351 && offboard_setpoint_counter_ <= 400)
+			{
+				publish_trajectory_setpoint(-2, 5, -10);
+			
+			}
+
+			if (offboard_setpoint_counter_ >= 401 && offboard_setpoint_counter_ <= 450)
+			{
+				publish_trajectory_setpoint(0, 0, -10);
+			}
+
+			if (offboard_setpoint_counter_ >= 451)
+			{
+				land();
+			}
            		// stop the counter after reaching 11
-			if (offboard_setpoint_counter_ < 11)
+
+			if (offboard_setpoint_counter_ < 452)
 		       	{
 				offboard_setpoint_counter_++;
 			}
+
 		};
 		timer_ = this->create_wall_timer(100ms, timer_callback);
 	}
@@ -127,11 +182,28 @@ private:
 	uint64_t offboard_setpoint_counter_;   //!< counter for the number of setpoints sent
 
 	void publish_offboard_control_mode() const;
-	void publish_trajectory_setpoint(int x, int y, int z) const;
+	void publish_trajectory_setpoint(float x, float y, float z) const;
 	void land() const;
+	void cycle(float x, float y, float z, float r) const;
 	void publish_vehicle_command(uint16_t command, float param1 = 0.0,
 				     float param2 = 0.0) const;
 };
+
+/*
+ * cycle()
+ */
+
+void OffboardControl::cycle(float x, float y, float z, float r) const
+{
+
+	for (int i = 0; i < 100; i++) 
+	{
+		publish_trajectory_setpoint(x, y, z);
+		x = x + 0.5;
+		y = sqrt(r*r - x*x);
+		
+	}
+}
 
 /**
  * @brief Send a command to Arm the vehicle
@@ -179,7 +251,7 @@ void OffboardControl::publish_offboard_control_mode() const
  *        For this example, it sends a trajectory setpoint to make the
  *        vehicle hover at 5 meters with a yaw angle of 180 degrees.
  */
-void OffboardControl::publish_trajectory_setpoint(int x, int y, int z) const
+void OffboardControl::publish_trajectory_setpoint(float x, float y, float z) const
 {
 	TrajectorySetpoint msg{};
 	msg.timestamp = timestamp_.load();
@@ -198,6 +270,8 @@ void OffboardControl::publish_trajectory_setpoint(int x, int y, int z) const
 void OffboardControl::land() const 
 {
 	publish_vehicle_command(VehicleCommand::VEHICLE_CMD_NAV_LAND);
+
+	RCLCPP_INFO(this->get_logger(), "Land command send");
 }
 
 
