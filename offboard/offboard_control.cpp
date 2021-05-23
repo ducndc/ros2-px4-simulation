@@ -80,7 +80,9 @@ public:
 			this->create_publisher<VehicleCommand>("VehicleCommand_PubSubTopic");
 #endif
 
-		// get common timestamp
+		/* 
+		 * get common timestamp
+		 */
 		timesync_sub_ =
 			this->create_subscription<px4_msgs::msg::Timesync>("Timesync_PubSubTopic", 10,
 				[this](const px4_msgs::msg::Timesync::UniquePtr msg)
@@ -92,16 +94,23 @@ public:
 	       	{
 
 			if (offboard_setpoint_counter_ == 10)
-		       	{
-				// Change to Offboard mode after 10 setpoints
+		    {
+				/* 
+				 * Change to Offboard mode after 10 setpoints
+				 */ 
 				this->publish_vehicle_command(VehicleCommand::VEHICLE_CMD_DO_SET_MODE, 1, 6);
 
-				// Arm the vehicle
+				/* 
+				 * Arm the vehicle
+				 */
 				this->arm();
 
 			}
 
-            		// offboard_control_mode needs to be paired with trajectory_setpoint
+
+            	/*
+            	 * offboard_control_mode needs to be paired with trajectory_setpoint
+            	 */
 			publish_offboard_control_mode();
 			publish_trajectory_setpoint(0, 0, -5);
 
@@ -155,7 +164,9 @@ public:
 			{
 				land();
 			}
-           		// stop the counter after reaching 11
+           		/* 
+           		 * stop the counter after reaching 11
+           		 */
 
 			if (offboard_setpoint_counter_ < 452)
 		       	{
